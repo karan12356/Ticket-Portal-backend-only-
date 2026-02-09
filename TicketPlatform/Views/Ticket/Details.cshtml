@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title = "Ticket Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+<div id="details"></div>
+
+<script>
+fetch(`http://localhost:7255/api/tickets/@ViewBag.TicketId`)
+    .then(res => res.json())
+    .then(t => {
+        details.innerHTML = `
+            <h3>${t.confirmationNumber}</h3>
+            <p><b>Status:</b> ${t.status}</p>
+            <p><b>Category:</b> ${t.category}</p>
+            <p>${t.description}</p>
+        `;
+    });
+</script>

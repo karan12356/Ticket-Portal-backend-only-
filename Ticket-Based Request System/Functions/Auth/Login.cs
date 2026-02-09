@@ -4,6 +4,8 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Ticket_Based_Request_System.Helpers;
 using Ticket_Based_Request_System.Services;
+using Microsoft.Azure.Cosmos;
+using AppUser = Ticket_Based_Request_System.Models.User;
 
 namespace Ticket_Based_Request_System.Functions.Auth
 {
@@ -28,19 +30,22 @@ namespace Ticket_Based_Request_System.Functions.Auth
                 string email = body.GetProperty("email").GetString();
                 string password = body.GetProperty("password").GetString();
 
-                var query = new Microsoft.Azure.Cosmos.QueryDefinition(
+                var query = new QueryDefinition(
                     "SELECT * FROM c WHERE c.email = @email")
                     .WithParameter("@email", email);
 
-                var iterator = _cosmos.Users.GetItemQueryIterator<dynamic>(query);
+                var iterator = _cosmos.Users.GetItemQueryIterator<AppUser>(query);
+
                 if (!iterator.HasMoreResults)
                     return req.CreateResponse(HttpStatusCode.Unauthorized);
 
-                var user = (await iterator.ReadNextAsync()).FirstOrDefault();
+                var response = await iterator.ReadNextAsync();
+                var user = response.FirstOrDefault();
+
                 if (user == null)
                     return req.CreateResponse(HttpStatusCode.Unauthorized);
 
-                if (!PasswordHelper.Verify(password, user.passwordHash.ToString()))
+                if (!PasswordHelper.Verify(password, user.passwordHash))
                     return req.CreateResponse(HttpStatusCode.Unauthorized);
 
                 var res = req.CreateResponse(HttpStatusCode.OK);

@@ -1,7 +1,39 @@
-﻿
-@{
-    ViewBag.Title = "SignUp";
+﻿@{
+    ViewBag.Title = "Signup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>SignUp</h2>
+<h2>Signup</h2>
 
+<input id="name" placeholder="Name" />
+<input id="email" placeholder="Email" />
+<input id="password" type="password" placeholder="Password" />
+
+<select id="role">
+    <option value="">Select Role</option>
+    <option value="Sales Rep">Sales Rep</option>
+    <option value="SVP">SVP</option>
+    <option value="IT Manager">IT Manager</option>
+</select>
+
+<button onclick="signup()">Signup</button>
+<div id="msg"></div>
+<script>
+    const API_BASE = "http://localhost:7255/api";
+
+    function signup() {
+        fetch(`${API_BASE}/auth/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: name.value,
+                email: email.value,
+                password: password.value,
+                role: role.value
+            })
+        })
+            .then(res => res.json())
+            .then(r => msg.innerHTML = r.message);
+    }
+
+</script>

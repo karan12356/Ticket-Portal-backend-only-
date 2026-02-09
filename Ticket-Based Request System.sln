@@ -5,8 +5,6 @@ VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticket-Based Request System", "Ticket-Based Request System\Ticket-Based Request System.csproj", "{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketPlatform", "TicketPlatform\TicketPlatform.csproj", "{7496C8E5-0201-4301-ABE3-E4218636D07A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7496C8E5-0201-4301-ABE3-E4218636D07A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7496C8E5-0201-4301-ABE3-E4218636D07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7496C8E5-0201-4301-ABE3-E4218636D07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7496C8E5-0201-4301-ABE3-E4218636D07A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

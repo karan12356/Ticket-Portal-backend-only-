@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
-using System.ComponentModel;
 
 namespace Ticket_Based_Request_System.Services
 {
@@ -11,30 +10,23 @@ namespace Ticket_Based_Request_System.Services
 
         public CosmosDbService(IConfiguration configuration)
         {
-            try
-            {
-                _client = new CosmosClient(
-                    configuration["CosmosDb:Endpoint"],
-                    configuration["CosmosDb:Key"]
-                );
+            _client = new CosmosClient(
+                configuration["CosmosDb:Endpoint"],
+                configuration["CosmosDb:Key"]
+            );
 
-                _database = _client.GetDatabase(
-                    configuration["CosmosDb:DatabaseName"]
-                );
-            }
-            catch
-            {
-                throw;
-            }
+            _database = _client.GetDatabase(
+                configuration["CosmosDb:DatabaseName"]
+            );
         }
 
-        public Container Users =>
+        public Microsoft.Azure.Cosmos.Container Users =>
             _database.GetContainer("Users");
 
-        public Container Tickets =>
+        public Microsoft.Azure.Cosmos.Container Tickets =>
             _database.GetContainer("Tickets");
 
-        public Container Counters =>
+        public Microsoft.Azure.Cosmos.Container Counters =>
             _database.GetContainer("Counters");
     }
 }

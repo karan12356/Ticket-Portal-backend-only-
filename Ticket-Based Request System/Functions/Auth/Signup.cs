@@ -1,10 +1,14 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Ticket_Based_Request_System.Models;
+using Microsoft.Azure.Cosmos;
 using Ticket_Based_Request_System.Services;
 using Ticket_Based_Request_System.Helpers;
+
+// 🔹 FIX for ambiguous User
+using AppUser = Ticket_Based_Request_System.Models.User;
 
 namespace Ticket_Based_Request_System.Functions.Auth
 {
@@ -31,6 +35,30 @@ namespace Ticket_Based_Request_System.Functions.Auth
                 string password = body.GetProperty("password").GetString();
                 string role = body.GetProperty("role").GetString();
 
+                // 🔹 BASIC VALIDATIONS
+                if (string.IsNullOrWhiteSpace(name) ||
+                    string.IsNullOrWhiteSpace(email) ||
+                    string.IsNullOrWhiteSpace(password) ||
+                    string.IsNullOrWhiteSpace(role))
+                {
+                    return BadRequest(req, "All fields are required");
+                }
+
+                // 🔹 EMAIL FORMAT VALIDATION
+                if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                {
+                    return BadRequest(req, "Invalid email format");
+                }
+
+                // 🔹 PASSWORD VALIDATION
+                if (!Regex.IsMatch(password,
+                    @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"))
+                {
+                    return BadRequest(req,
+                        "Password must be at least 8 characters and include uppercase, number, and special character");
+                }
+
+                // 🔹 ROLE PREFIX (UNCHANGED LOGIC)
                 string rolePrefix = role switch
                 {
                     "Sales Rep" => "W",
@@ -41,14 +69,28 @@ namespace Ticket_Based_Request_System.Functions.Auth
 
                 if (rolePrefix == null)
                 {
-                    var bad = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await bad.WriteStringAsync("Invalid role");
-                    return bad;
+                    return BadRequest(req, "Invalid role");
                 }
 
+                // 🔹 CHECK IF EMAIL ALREADY EXISTS
+                var emailQuery = new QueryDefinition(
+                    "SELECT VALUE COUNT(1) FROM c WHERE c.email = @email")
+                    .WithParameter("@email", email);
+
+                var iterator = _cosmos.Users.GetItemQueryIterator<int>(emailQuery);
+                int emailCount = (await iterator.ReadNextAsync()).FirstOrDefault();
+
+                if (emailCount > 0)
+                {
+                    var conflict = req.CreateResponse(HttpStatusCode.Conflict);
+                    await conflict.WriteStringAsync("Email already exists");
+                    return conflict;
+                }
+
+                // 🔹 EMPLOYEE CODE COUNTER (UNCHANGED)
                 var counter = await _cosmos.Counters.ReadItemAsync<dynamic>(
                     "employeeCode",
-                    new Microsoft.Azure.Cosmos.PartitionKey("employee"));
+                    new PartitionKey("employee"));
 
                 int nextCode = counter.Resource.currentValue + 1;
                 counter.Resource.currentValue = nextCode;
@@ -56,9 +98,10 @@ namespace Ticket_Based_Request_System.Functions.Auth
                 await _cosmos.Counters.ReplaceItemAsync(
                     counter.Resource,
                     "employeeCode",
-                    new Microsoft.Azure.Cosmos.PartitionKey("employee"));
+                    new PartitionKey("employee"));
 
-                var user = new User
+                // 🔹 CREATE USER (ONLY TYPE FIXED)
+                var user = new AppUser
                 {
                     name = name,
                     email = email,
@@ -70,7 +113,7 @@ namespace Ticket_Based_Request_System.Functions.Auth
 
                 await _cosmos.Users.CreateItemAsync(
                     user,
-                    new Microsoft.Azure.Cosmos.PartitionKey(email));
+                    new PartitionKey(email));
 
                 var res = req.CreateResponse(HttpStatusCode.Created);
                 await res.WriteAsJsonAsync(new
@@ -88,6 +131,13 @@ namespace Ticket_Based_Request_System.Functions.Auth
             {
                 return req.CreateResponse(HttpStatusCode.InternalServerError);
             }
+        }
+
+        private HttpResponseData BadRequest(HttpRequestData req, string message)
+        {
+            var res = req.CreateResponse(HttpStatusCode.BadRequest);
+            res.WriteString(message);
+            return res;
         }
     }
 }

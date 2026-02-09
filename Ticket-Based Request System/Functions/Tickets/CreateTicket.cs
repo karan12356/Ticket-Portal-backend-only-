@@ -1,9 +1,9 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Collections.Concurrent;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 using System.Net;
-using System.Text.Json;
 using Ticket_Based_Request_System.Models;
 using Ticket_Based_Request_System.Services;
 
@@ -12,10 +12,12 @@ namespace Ticket_Based_Request_System.Functions.Tickets
     public class CreateTicket
     {
         private readonly CosmosDbService _cosmos;
+        private readonly BlobStorageService _blob;
 
-        public CreateTicket(CosmosDbService cosmos)
+        public CreateTicket(CosmosDbService cosmos, BlobStorageService blob)
         {
             _cosmos = cosmos;
+            _blob = blob;
         }
 
         [Function("CreateTicket")]
@@ -23,57 +25,189 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")]
             HttpRequestData req)
         {
+            // 1️⃣ Validate Content-Type
+            if (!req.Headers.TryGetValues("Content-Type", out var values) ||
+                !values.First().StartsWith("multipart/form-data"))
+            {
+                return BadRequest(req, "Content-Type must be multipart/form-data");
+            }
+
+            // 2️⃣ Extract boundary safely
+            string boundary;
             try
             {
-                var body = await JsonSerializer.DeserializeAsync<JsonElement>(req.Body);
+                boundary = HeaderUtilities.RemoveQuotes(
+                    MediaTypeHeaderValue.Parse(values.First()).Boundary
+                ).Value;
+            }
+            catch
+            {
+                return BadRequest(req, "Invalid multipart boundary");
+            }
 
-                string userId = body.GetProperty("userId").GetString();
-                string employeeCode = body.GetProperty("employeeCode").GetString();
-                string role = body.GetProperty("role").GetString();
-                string rolePrefix = body.GetProperty("rolePrefix").GetString();
+            var reader = new MultipartReader(boundary, req.Body);
 
-                string title = body.GetProperty("title").GetString();
-                string description = body.GetProperty("description").GetString();
-                string category = body.GetProperty("category").GetString();
+            string userId = null, employeeCode = null, role = null,
+                   rolePrefix = null, title = null, description = null, category = null;
 
+            var attachments = new List<Attachment>();
+            var pendingFiles = new List<(MultipartSection section, string fileName)>();
+
+            // 3️⃣ Read all sections
+            MultipartSection section;
+            while ((section = await reader.ReadNextSectionAsync()) != null)
+            {
+                if (string.IsNullOrEmpty(section.ContentDisposition))
+                    continue;
+
+                var contentDisposition = ContentDispositionHeaderValue.Parse(section.ContentDisposition);
+
+                // TEXT FIELDS
+                if (contentDisposition.IsFormDisposition())
+                {
+                    using var sr = new StreamReader(section.Body);
+                    var value = await sr.ReadToEndAsync();
+
+                    switch (contentDisposition.Name.Value)
+                    {
+                        case "userId": userId = value; break;
+                        case "employeeCode": employeeCode = value; break;
+                        case "role": role = value; break;
+                        case "rolePrefix": rolePrefix = value; break;
+                        case "title": title = value; break;
+                        case "description": description = value; break;
+                        case "category": category = value; break;
+                    }
+                }
+                // FILES (store temporarily)
+                else if (contentDisposition.IsFileDisposition())
+                {
+                    pendingFiles.Add((section, contentDisposition.FileName.Value));
+                }
+            }
+
+            // 4️⃣ Validate required fields
+            if (string.IsNullOrWhiteSpace(userId) ||
+                string.IsNullOrWhiteSpace(employeeCode) ||
+                string.IsNullOrWhiteSpace(role) ||
+                string.IsNullOrWhiteSpace(rolePrefix) ||
+                string.IsNullOrWhiteSpace(title) ||
+                string.IsNullOrWhiteSpace(category))
+            {
+                return BadRequest(req, "Missing required fields");
+            }
+
+            // 5️⃣ Validate attachments count
+            if (pendingFiles.Count > 5)
+            {
+                return BadRequest(req, "Maximum 5 attachments allowed");
+            }
+
+            // 6️⃣ Upload attachments safely
+            foreach (var (fileSection, fileName) in pendingFiles)
+            {
+                var ext = Path.GetExtension(fileName).ToLower();
+                if (ext != ".jpg" && ext != ".jpeg" && ext != ".pdf")
+                    return BadRequest(req, "Only JPG, JPEG, PDF files are allowed");
+
+                string blobPath = $"tickets/{userId}/{Guid.NewGuid()}_{fileName}";
+                string fileUrl;
+
+                try
+                {
+                    fileUrl = await _blob.UploadAsync(
+                        blobPath,
+                        fileSection.Body,
+                        fileSection.ContentType
+                    );
+                }
+                catch
+                {
+                    return Error(req, HttpStatusCode.BadGateway, "Failed to upload attachment");
+                }
+
+                attachments.Add(new Attachment
+                {
+                    fileName = fileName,
+                    fileType = fileSection.ContentType,
+                    fileUrl = fileUrl,
+                    uploadedAt = DateTime.UtcNow
+                });
+            }
+
+            // 7️⃣ Generate confirmation number
+            int nextNumber;
+            try
+            {
                 var counterResponse = await _cosmos.Counters.ReadItemAsync<dynamic>(
                     rolePrefix,
                     new PartitionKey("ticket"));
 
-                int nextNumber = counterResponse.Resource.currentValue + 1;
+                nextNumber = counterResponse.Resource.currentValue + 1;
                 counterResponse.Resource.currentValue = nextNumber;
 
                 await _cosmos.Counters.ReplaceItemAsync(
                     counterResponse.Resource,
                     rolePrefix,
                     new PartitionKey("ticket"));
-
-                string confirmationNumber = $"{rolePrefix}-{nextNumber:D5}";
-
-                var ticket = new Ticket
-                {
-                    confirmationNumber = confirmationNumber,
-                    userId = userId,
-                    employeeCode = employeeCode,
-                    role = role,
-                    title = title,
-                    description = description,
-                    category = category,
-                    status = "Open"
-                };
-
-                await _cosmos.Tickets.CreateItemAsync(
-                    ticket,
-                    new PartitionKey(userId));
-
-                var res = req.CreateResponse(HttpStatusCode.Created);
-                await res.WriteAsJsonAsync(ticket);
-                return res;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return Error(req, HttpStatusCode.NotFound, "Ticket counter not found for role");
             }
             catch
             {
-                return req.CreateResponse(HttpStatusCode.InternalServerError);
+                return Error(req, HttpStatusCode.BadGateway, "Failed to generate ticket number");
             }
+
+            // 8️⃣ Create ticket
+            var now = DateTime.UtcNow;
+            var ticket = new Ticket
+            {
+                confirmationNumber = $"{rolePrefix}-{nextNumber:D5}",
+                userId = userId,
+                employeeCode = employeeCode,
+                role = role,
+                title = title,
+                description = description,
+                category = category,
+                status = "Open",
+                attachments = attachments,
+                createdAt = now,
+                updatedAt = now
+            };
+
+            try
+            {
+                await _cosmos.Tickets.CreateItemAsync(
+                    ticket,
+                    new PartitionKey(userId));
+            }
+            catch
+            {
+                return Error(req, HttpStatusCode.BadGateway, "Failed to save ticket");
+            }
+
+            // 9️⃣ Success
+            var res = req.CreateResponse(HttpStatusCode.Created);
+            await res.WriteAsJsonAsync(ticket);
+            return res;
+        }
+
+        // ---------- Helpers ----------
+
+        private HttpResponseData BadRequest(HttpRequestData req, string msg)
+        {
+            var res = req.CreateResponse(HttpStatusCode.BadRequest);
+            res.WriteString(msg);
+            return res;
+        }
+
+        private HttpResponseData Error(HttpRequestData req, HttpStatusCode code, string msg)
+        {
+            var res = req.CreateResponse(code);
+            res.WriteString(msg);
+            return res;
         }
     }
 }

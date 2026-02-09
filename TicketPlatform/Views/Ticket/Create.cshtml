@@ -1,0 +1,39 @@
+﻿@{
+    ViewBag.Title = "Create Ticket";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Create Ticket</h2>
+
+<input id="title" placeholder="Title" />
+<textarea id="description" placeholder="Description"></textarea>
+
+<select id="category">
+    <option>IT</option>
+    <option>HR</option>
+    <option>Finance</option>
+</select>
+
+<button onclick="createTicket()">Submit</button>
+<div id="msg"></div>
+<script>
+    function createTicket() {
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        fetch(`${API_BASE}/tickets`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                title: title.value,
+                description: description.value,
+                category: category.value,
+                userId: user.id,
+                role: user.role,
+                employeeCode: user.employeeCode
+            })
+        })
+            .then(res => res.json())
+            .then(r => msg.innerHTML = r.confirmationNumber);
+    }
+
+</script>

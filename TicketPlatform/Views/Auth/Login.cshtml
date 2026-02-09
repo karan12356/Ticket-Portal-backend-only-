@@ -1,7 +1,30 @@
-﻿
-@{
+﻿@{
     ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>Login</h2>
 
+<input id="email" placeholder="Email" />
+<input id="password" type="password" />
+
+<button onclick="login()">Login</button>
+<div id="msg"></div>
+<script>
+    const API_BASE = "http://localhost:7255/api";
+    function login() {
+        fetch(`${API_BASE}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: email.value,
+                password: password.value
+            })
+        })
+            .then(res => res.json())
+            .then(r => {
+                localStorage.setItem("user", JSON.stringify(r));
+                window.location.href = "/Ticket";
+            });
+    }
+</script>
