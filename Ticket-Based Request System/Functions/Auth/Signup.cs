@@ -7,7 +7,6 @@ using Microsoft.Azure.Cosmos;
 using Ticket_Based_Request_System.Services;
 using Ticket_Based_Request_System.Helpers;
 
-// 🔹 FIX for ambiguous User
 using AppUser = Ticket_Based_Request_System.Models.User;
 
 namespace Ticket_Based_Request_System.Functions.Auth
@@ -35,7 +34,6 @@ namespace Ticket_Based_Request_System.Functions.Auth
                 string password = body.GetProperty("password").GetString();
                 string role = body.GetProperty("role").GetString();
 
-                // 🔹 BASIC VALIDATIONS
                 if (string.IsNullOrWhiteSpace(name) ||
                     string.IsNullOrWhiteSpace(email) ||
                     string.IsNullOrWhiteSpace(password) ||
@@ -44,13 +42,11 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     return BadRequest(req, "All fields are required");
                 }
 
-                // 🔹 EMAIL FORMAT VALIDATION
                 if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                 {
                     return BadRequest(req, "Invalid email format");
                 }
 
-                // 🔹 PASSWORD VALIDATION
                 if (!Regex.IsMatch(password,
                     @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"))
                 {
@@ -58,7 +54,6 @@ namespace Ticket_Based_Request_System.Functions.Auth
                         "Password must be at least 8 characters and include uppercase, number, and special character");
                 }
 
-                // 🔹 ROLE PREFIX (UNCHANGED LOGIC)
                 string rolePrefix = role switch
                 {
                     "Sales Rep" => "W",
@@ -72,7 +67,6 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     return BadRequest(req, "Invalid role");
                 }
 
-                // 🔹 CHECK IF EMAIL ALREADY EXISTS
                 var emailQuery = new QueryDefinition(
                     "SELECT VALUE COUNT(1) FROM c WHERE c.email = @email")
                     .WithParameter("@email", email);
@@ -87,7 +81,6 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     return conflict;
                 }
 
-                // 🔹 EMPLOYEE CODE COUNTER (UNCHANGED)
                 var counter = await _cosmos.Counters.ReadItemAsync<dynamic>(
                     "employeeCode",
                     new PartitionKey("employee"));
@@ -100,7 +93,6 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     "employeeCode",
                     new PartitionKey("employee"));
 
-                // 🔹 CREATE USER (ONLY TYPE FIXED)
                 var user = new AppUser
                 {
                     name = name,

@@ -25,14 +25,12 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")]
             HttpRequestData req)
         {
-            // 1️⃣ Validate Content-Type
             if (!req.Headers.TryGetValues("Content-Type", out var values) ||
                 !values.First().StartsWith("multipart/form-data"))
             {
                 return BadRequest(req, "Content-Type must be multipart/form-data");
             }
 
-            // 2️⃣ Extract boundary safely
             string boundary;
             try
             {
@@ -53,7 +51,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             var attachments = new List<Attachment>();
             var pendingFiles = new List<(MultipartSection section, string fileName)>();
 
-            // 3️⃣ Read all sections
             MultipartSection section;
             while ((section = await reader.ReadNextSectionAsync()) != null)
             {
@@ -62,7 +59,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
                 var contentDisposition = ContentDispositionHeaderValue.Parse(section.ContentDisposition);
 
-                // TEXT FIELDS
                 if (contentDisposition.IsFormDisposition())
                 {
                     using var sr = new StreamReader(section.Body);
@@ -79,14 +75,13 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                         case "category": category = value; break;
                     }
                 }
-                // FILES (store temporarily)
+                
                 else if (contentDisposition.IsFileDisposition())
                 {
                     pendingFiles.Add((section, contentDisposition.FileName.Value));
                 }
             }
 
-            // 4️⃣ Validate required fields
             if (string.IsNullOrWhiteSpace(userId) ||
                 string.IsNullOrWhiteSpace(employeeCode) ||
                 string.IsNullOrWhiteSpace(role) ||
@@ -97,13 +92,11 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 return BadRequest(req, "Missing required fields");
             }
 
-            // 5️⃣ Validate attachments count
             if (pendingFiles.Count > 5)
             {
                 return BadRequest(req, "Maximum 5 attachments allowed");
             }
 
-            // 6️⃣ Upload attachments safely
             foreach (var (fileSection, fileName) in pendingFiles)
             {
                 var ext = Path.GetExtension(fileName).ToLower();
@@ -135,7 +128,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 });
             }
 
-            // 7️⃣ Generate confirmation number
             int nextNumber;
             try
             {
@@ -160,7 +152,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 return Error(req, HttpStatusCode.BadGateway, "Failed to generate ticket number");
             }
 
-            // 8️⃣ Create ticket
             var now = DateTime.UtcNow;
             var ticket = new Ticket
             {
@@ -188,13 +179,11 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 return Error(req, HttpStatusCode.BadGateway, "Failed to save ticket");
             }
 
-            // 9️⃣ Success
             var res = req.CreateResponse(HttpStatusCode.Created);
             await res.WriteAsJsonAsync(ticket);
             return res;
         }
 
-        // ---------- Helpers ----------
 
         private HttpResponseData BadRequest(HttpRequestData req, string msg)
         {
