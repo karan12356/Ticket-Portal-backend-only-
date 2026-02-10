@@ -24,28 +24,54 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             try
             {
                 string userId = req.Query["userId"];
+                int page = int.TryParse(req.Query["page"], out var p) ? p : 1;
+                int pageSize = 5;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return req.CreateResponse(HttpStatusCode.BadRequest);
+                }
 
                 var query = new QueryDefinition(
                     "SELECT * FROM c WHERE c.userId = @uid ORDER BY c.createdAt DESC")
                     .WithParameter("@uid", userId);
 
-                var iterator = _cosmos.Tickets.GetItemQueryIterator<Ticket>(query);
-
-                var results = new List<Ticket>();
-
-                while (iterator.HasMoreResults && results.Count < 10)
+                var requestOptions = new QueryRequestOptions
                 {
-                    var page = await iterator.ReadNextAsync();
-                    results.AddRange(page);
+                    MaxItemCount = pageSize
+                };
+
+                string continuationToken = null;
+                FeedResponse<Ticket> response = null;
+
+                for (int i = 1; i <= page; i++)
+                {
+                    var iterator = _cosmos.Tickets.GetItemQueryIterator<Ticket>(
+                        query,
+                        continuationToken,
+                        requestOptions);
+
+                    response = await iterator.ReadNextAsync();
+                    continuationToken = response.ContinuationToken;
                 }
 
+                var result = new
+                {
+                    page,
+                    pageSize,
+                    tickets = response.Resource,
+                    nextPageToken = continuationToken
+                };
+
                 var res = req.CreateResponse(HttpStatusCode.OK);
-                await res.WriteAsJsonAsync(results.Take(10));
+                await res.WriteAsJsonAsync(result);
                 return res;
             }
-            catch
+            catch (Exception ex)
             {
-                return req.CreateResponse(HttpStatusCode.InternalServerError);
+                var err = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await err.WriteStringAsync(ex.Message);
+                return err;
             }
         }
     }
