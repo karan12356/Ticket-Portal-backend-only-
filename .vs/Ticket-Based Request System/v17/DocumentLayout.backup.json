@@ -3,48 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\local.settings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\local.settings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\services\\blobstorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\services\\blobstorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\tickets\\createticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\tickets\\createticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\services\\cosmosdbservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\services\\cosmosdbservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\tickets\\getticketbyid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\tickets\\getticketbyid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\tickets\\gettickets.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\tickets\\gettickets.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\helpers\\passwordhelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\helpers\\passwordhelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\auth\\signup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\auth\\signup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\auth\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\auth\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\tickets\\updateticketstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\tickets\\updateticketstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\models\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\models\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -54,149 +14,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "BlobStorageService.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\BlobStorageService.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Services\\BlobStorageService.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\BlobStorageService.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Services\\BlobStorageService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T18:43:34.102Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "PasswordHelper.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Helpers\\PasswordHelper.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Helpers\\PasswordHelper.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Helpers\\PasswordHelper.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Helpers\\PasswordHelper.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T18:36:01.576Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Signup.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Auth\\Signup.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Auth\\Signup.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Auth\\Signup.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Auth\\Signup.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T18:35:55.253Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "CosmosDbService.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\CosmosDbService.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Services\\CosmosDbService.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\CosmosDbService.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Services\\CosmosDbService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T17:55:12.96Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "UpdateTicketStatus.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\UpdateTicketStatus.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Tickets\\UpdateTicketStatus.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\UpdateTicketStatus.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Tickets\\UpdateTicketStatus.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T17:13:22.634Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "GetTicketById.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\GetTicketById.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Tickets\\GetTicketById.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\GetTicketById.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Tickets\\GetTicketById.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T17:10:17.234Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Ticket.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Models\\Ticket.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Models\\Ticket.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Models\\Ticket.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Models\\Ticket.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T17:08:28.954Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "CreateTicket.cs",
               "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
               "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
               "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
               "RelativeToolTip": "Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
-              "ViewState": "AgIAAFIAAAAAAAAAAAAAAGIAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAJMAAAAAAAAAAAAUwKkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T17:07:25.411Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "GetTickets.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\GetTickets.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Tickets\\GetTickets.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\GetTickets.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Tickets\\GetTickets.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T06:33:50.275Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Login.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Auth\\Login.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Auth\\Login.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Auth\\Login.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Auth\\Login.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAswBoAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T06:13:01.398Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "local.settings.json",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\local.settings.json",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\local.settings.json",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\local.settings.json",
-              "RelativeToolTip": "Ticket-Based Request System\\local.settings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAADhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-10T06:12:55.729Z",
+              "WhenOpened": "2026-02-11T15:26:17.569Z",
               "EditorCaption": ""
             }
           ]
