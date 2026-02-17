@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\tickets\\createticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\tickets\\createticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\functions\\profile\\changepassword.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\functions\\profile\\changepassword.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,14 +19,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "CreateTicket.cs",
-              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
-              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
-              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
-              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Tickets\\CreateTicket.cs",
-              "ViewState": "AgIAAJMAAAAAAAAAAAAUwKkAAAAAAAAAAAAAAA==",
+              "Title": "ChangePassword.cs",
+              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Profile\\ChangePassword.cs",
+              "RelativeDocumentMoniker": "Ticket-Based Request System\\Functions\\Profile\\ChangePassword.cs",
+              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Functions\\Profile\\ChangePassword.cs",
+              "RelativeToolTip": "Ticket-Based Request System\\Functions\\Profile\\ChangePassword.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAiwCkAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-11T15:26:17.569Z",
+              "WhenOpened": "2026-02-17T15:26:18.021Z",
               "EditorCaption": ""
             }
           ]

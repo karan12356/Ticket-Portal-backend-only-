@@ -16,5 +16,6 @@ namespace Ticket_Based_Request_System.Models
         public string role { get; set; }
         public string rolePrefix { get; set; }
         public DateTime createdAt { get; set; } = DateTime.UtcNow;
+        public string profileImageUrl { get; set; }
     }
 }
