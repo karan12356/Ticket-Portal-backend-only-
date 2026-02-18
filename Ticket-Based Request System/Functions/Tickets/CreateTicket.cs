@@ -22,8 +22,8 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
         [Function("CreateTicket")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")]
-            HttpRequestData req)
+     [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")]
+    HttpRequestData req)
         {
             if (!req.Headers.TryGetValues("Content-Type", out var values) ||
                 !values.First().StartsWith("multipart/form-data"))
@@ -47,6 +47,8 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             string userId = null, employeeCode = null, role = null,
                    rolePrefix = null, title = null, description = null, category = null;
+
+            bool isDraft = false;
 
             var attachments = new List<Attachment>();
             var pendingFiles = new List<(MultipartSection section, string fileName)>();
@@ -73,9 +75,9 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                         case "title": title = value; break;
                         case "description": description = value; break;
                         case "category": category = value; break;
+                        case "isDraft": bool.TryParse(value, out isDraft); break;
                     }
                 }
-                
                 else if (contentDisposition.IsFileDisposition())
                 {
                     pendingFiles.Add((section, contentDisposition.FileName.Value));
@@ -93,9 +95,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             }
 
             if (pendingFiles.Count > 5)
-            {
                 return BadRequest(req, "Maximum 5 attachments allowed");
-            }
 
             foreach (var (fileSection, fileName) in pendingFiles)
             {
@@ -128,41 +128,48 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 });
             }
 
-            int nextNumber;
-            try
-            {
-                var counterResponse = await _cosmos.Counters.ReadItemAsync<dynamic>(
-                    rolePrefix,
-                    new PartitionKey("ticket"));
+            string confirmationNumber = null;
+            DateTime? submittedAt = null;
 
-                nextNumber = counterResponse.Resource.currentValue + 1;
-                counterResponse.Resource.currentValue = nextNumber;
+            if (!isDraft)
+            {
+                try
+                {
+                    var counterResponse = await _cosmos.Counters.ReadItemAsync<dynamic>(
+                        rolePrefix,
+                        new PartitionKey("ticket"));
 
-                await _cosmos.Counters.ReplaceItemAsync(
-                    counterResponse.Resource,
-                    rolePrefix,
-                    new PartitionKey("ticket"));
-            }
-            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return Error(req, HttpStatusCode.NotFound, "Ticket counter not found for role");
-            }
-            catch
-            {
-                return Error(req, HttpStatusCode.BadGateway, "Failed to generate ticket number");
+                    int nextNumber = counterResponse.Resource.currentValue + 1;
+                    counterResponse.Resource.currentValue = nextNumber;
+
+                    await _cosmos.Counters.ReplaceItemAsync(
+                        counterResponse.Resource,
+                        rolePrefix,
+                        new PartitionKey("ticket"));
+
+                    confirmationNumber = $"{rolePrefix}-{nextNumber:D5}";
+                    submittedAt = DateTime.UtcNow;
+                }
+                catch
+                {
+                    return Error(req, HttpStatusCode.BadGateway, "Failed to generate ticket number");
+                }
             }
 
             var now = DateTime.UtcNow;
+
             var ticket = new Ticket
             {
-                confirmationNumber = $"{rolePrefix}-{nextNumber:D5}",
+                confirmationNumber = confirmationNumber,
                 userId = userId,
                 employeeCode = employeeCode,
                 role = role,
                 title = title,
                 description = description,
                 category = category,
-                status = "Open",
+                status = isDraft ? "Draft" : "Open",
+                isDraft = isDraft,
+                submittedAt = submittedAt,
                 attachments = attachments,
                 createdAt = now,
                 updatedAt = now
@@ -170,9 +177,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             try
             {
-                await _cosmos.Tickets.CreateItemAsync(
-                    ticket,
-                    new PartitionKey(userId));
+                await _cosmos.Tickets.CreateItemAsync(ticket, new PartitionKey(userId));
             }
             catch
             {
@@ -183,6 +188,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             await res.WriteAsJsonAsync(ticket);
             return res;
         }
+
 
 
         private HttpResponseData BadRequest(HttpRequestData req, string msg)

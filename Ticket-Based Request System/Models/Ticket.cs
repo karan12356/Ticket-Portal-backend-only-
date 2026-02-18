@@ -18,6 +18,8 @@ namespace Ticket_Based_Request_System.Models
         public string description { get; set; }
         public string category { get; set; }
         public string status { get; set; } = "Open";
+        public bool isDraft { get; set; } = false;      
+        public DateTime? submittedAt { get; set; }
         public List<Attachment> attachments { get; set; } = new();
         public DateTime createdAt { get; set; } = DateTime.UtcNow;
         public DateTime updatedAt { get; set; } = DateTime.UtcNow;
