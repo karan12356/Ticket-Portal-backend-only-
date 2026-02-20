@@ -22,118 +22,112 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
         [Function("CreateTicket")]
         public async Task<HttpResponseData> Run(
-     [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")]
-    HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "tickets")]
+            HttpRequestData req)
         {
-            if (!req.Headers.TryGetValues("Content-Type", out var values) ||
-                !values.First().StartsWith("multipart/form-data"))
-            {
-                return BadRequest(req, "Content-Type must be multipart/form-data");
-            }
-
-            string boundary;
             try
             {
-                boundary = HeaderUtilities.RemoveQuotes(
+                if (!req.Headers.TryGetValues("Content-Type", out var values) ||
+                    !values.First().StartsWith("multipart/form-data"))
+                {
+                    return BadRequest(req, "Content-Type must be multipart/form-data");
+                }
+
+                string boundary = HeaderUtilities.RemoveQuotes(
                     MediaTypeHeaderValue.Parse(values.First()).Boundary
                 ).Value;
-            }
-            catch
-            {
-                return BadRequest(req, "Invalid multipart boundary");
-            }
 
-            var reader = new MultipartReader(boundary, req.Body);
+                var reader = new MultipartReader(boundary, req.Body);
 
-            string userId = null, employeeCode = null, role = null,
-                   rolePrefix = null, title = null, description = null, category = null;
+                string userId = null, employeeCode = null, role = null,
+                       rolePrefix = null, title = null, description = null,
+                       category = null, requestType = "General";
 
-            bool isDraft = false;
+                bool isDraft = false;
+                bool isConfidential = false;
 
-            var attachments = new List<Attachment>();
-            var pendingFiles = new List<(MultipartSection section, string fileName)>();
+                var attachments = new List<Attachment>();
+                var pendingFiles = new List<(MultipartSection section, string fileName)>();
 
-            MultipartSection section;
-            while ((section = await reader.ReadNextSectionAsync()) != null)
-            {
-                if (string.IsNullOrEmpty(section.ContentDisposition))
-                    continue;
-
-                var contentDisposition = ContentDispositionHeaderValue.Parse(section.ContentDisposition);
-
-                if (contentDisposition.IsFormDisposition())
+                MultipartSection section;
+                while ((section = await reader.ReadNextSectionAsync()) != null)
                 {
-                    using var sr = new StreamReader(section.Body);
-                    var value = await sr.ReadToEndAsync();
+                    if (string.IsNullOrEmpty(section.ContentDisposition))
+                        continue;
 
-                    switch (contentDisposition.Name.Value)
+                    var contentDisposition = ContentDispositionHeaderValue.Parse(section.ContentDisposition);
+
+                    if (contentDisposition.IsFormDisposition())
                     {
-                        case "userId": userId = value; break;
-                        case "employeeCode": employeeCode = value; break;
-                        case "role": role = value; break;
-                        case "rolePrefix": rolePrefix = value; break;
-                        case "title": title = value; break;
-                        case "description": description = value; break;
-                        case "category": category = value; break;
-                        case "isDraft": bool.TryParse(value, out isDraft); break;
+                        using var sr = new StreamReader(section.Body);
+                        var value = await sr.ReadToEndAsync();
+
+                        switch (contentDisposition.Name.Value)
+                        {
+                            case "userId": userId = value; break;
+                            case "employeeCode": employeeCode = value; break;
+                            case "role": role = value; break;
+                            case "rolePrefix": rolePrefix = value; break;
+                            case "title": title = value; break;
+                            case "description": description = value; break;
+                            case "category": category = value; break;
+                            case "requestType": requestType = value; break;
+                            case "isDraft": bool.TryParse(value, out isDraft); break;
+                            case "isConfidential": bool.TryParse(value, out isConfidential); break;
+                        }
+                    }
+                    else if (contentDisposition.IsFileDisposition())
+                    {
+                        pendingFiles.Add((section, contentDisposition.FileName.Value));
                     }
                 }
-                else if (contentDisposition.IsFileDisposition())
+
+                if (string.IsNullOrWhiteSpace(userId) ||
+                    string.IsNullOrWhiteSpace(employeeCode) ||
+                    string.IsNullOrWhiteSpace(role) ||
+                    string.IsNullOrWhiteSpace(rolePrefix) ||
+                    string.IsNullOrWhiteSpace(title) ||
+                    string.IsNullOrWhiteSpace(category))
                 {
-                    pendingFiles.Add((section, contentDisposition.FileName.Value));
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(userId) ||
-                string.IsNullOrWhiteSpace(employeeCode) ||
-                string.IsNullOrWhiteSpace(role) ||
-                string.IsNullOrWhiteSpace(rolePrefix) ||
-                string.IsNullOrWhiteSpace(title) ||
-                string.IsNullOrWhiteSpace(category))
-            {
-                return BadRequest(req, "Missing required fields");
-            }
-
-            if (pendingFiles.Count > 5)
-                return BadRequest(req, "Maximum 5 attachments allowed");
-
-            foreach (var (fileSection, fileName) in pendingFiles)
-            {
-                var ext = Path.GetExtension(fileName).ToLower();
-                if (ext != ".jpg" && ext != ".jpeg" && ext != ".pdf")
-                    return BadRequest(req, "Only JPG, JPEG, PDF files are allowed");
-
-                string blobPath = $"tickets/{userId}/{Guid.NewGuid()}_{fileName}";
-                string fileUrl;
-
-                try
-                {
-                    fileUrl = await _blob.UploadAsync(
-                        blobPath,
-                        fileSection.Body,
-                        fileSection.ContentType
-                    );
-                }
-                catch
-                {
-                    return Error(req, HttpStatusCode.BadGateway, "Failed to upload attachment");
+                    return BadRequest(req, "Missing required fields");
                 }
 
-                attachments.Add(new Attachment
+                string[] operationalTypes = {
+                    "EmployeeCreation",
+                    "EmployeeSeparation",
+                    "AssetOrder"
+                };
+
+                if (operationalTypes.Contains(requestType) && role != "Admin")
                 {
-                    fileName = fileName,
-                    fileType = fileSection.ContentType,
-                    fileUrl = fileUrl,
-                    uploadedAt = DateTime.UtcNow
-                });
-            }
+                    return BadRequest(req, "Only Admin can create operational requests");
+                }
 
-            string confirmationNumber = null;
-            DateTime? submittedAt = null;
+                if (pendingFiles.Count > 5)
+                    return BadRequest(req, "Maximum 5 attachments allowed");
 
-            if (!isDraft)
-            {
-                try
+                foreach (var (fileSection, fileName) in pendingFiles)
+                {
+                    var ext = Path.GetExtension(fileName).ToLower();
+                    if (ext != ".jpg" && ext != ".jpeg" && ext != ".pdf")
+                        return BadRequest(req, "Only JPG, JPEG, PDF allowed");
+
+                    string blobPath = $"tickets/{userId}/{Guid.NewGuid()}_{fileName}";
+                    string fileUrl = await _blob.UploadAsync(blobPath, fileSection.Body, fileSection.ContentType);
+
+                    attachments.Add(new Attachment
+                    {
+                        fileName = fileName,
+                        fileType = fileSection.ContentType,
+                        fileUrl = fileUrl,
+                        uploadedAt = DateTime.UtcNow
+                    });
+                }
+
+                string confirmationNumber = null;
+                DateTime? submittedAt = null;
+
+                if (!isDraft)
                 {
                     var counterResponse = await _cosmos.Counters.ReadItemAsync<dynamic>(
                         rolePrefix,
@@ -150,57 +144,49 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     confirmationNumber = $"{rolePrefix}-{nextNumber:D5}";
                     submittedAt = DateTime.UtcNow;
                 }
-                catch
+
+                var ticket = new Ticket
                 {
-                    return Error(req, HttpStatusCode.BadGateway, "Failed to generate ticket number");
-                }
-            }
+                    confirmationNumber = confirmationNumber,
+                    userId = userId,
+                    employeeCode = employeeCode,
+                    role = role,
+                    requestType = requestType,
+                    title = title,
+                    description = description,
+                    category = category,
+                    status = isDraft ? "Draft" : "Open",
+                    isDraft = isDraft,
+                    submittedAt = submittedAt,
+                    isConfidential = isConfidential,
+                    attachments = attachments,
+                    createdAt = DateTime.UtcNow,
+                    updatedAt = DateTime.UtcNow
+                };
 
-            var now = DateTime.UtcNow;
-
-            var ticket = new Ticket
-            {
-                confirmationNumber = confirmationNumber,
-                userId = userId,
-                employeeCode = employeeCode,
-                role = role,
-                title = title,
-                description = description,
-                category = category,
-                status = isDraft ? "Draft" : "Open",
-                isDraft = isDraft,
-                submittedAt = submittedAt,
-                attachments = attachments,
-                createdAt = now,
-                updatedAt = now
-            };
-
-            try
-            {
                 await _cosmos.Tickets.CreateItemAsync(ticket, new PartitionKey(userId));
+
+                var res = req.CreateResponse(HttpStatusCode.Created);
+                await res.WriteAsJsonAsync(ticket);
+                return res;
             }
-            catch
+            catch (CosmosException ex)
             {
-                return Error(req, HttpStatusCode.BadGateway, "Failed to save ticket");
+                var err = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await err.WriteStringAsync($"Cosmos DB Error: {ex.Message}");
+                return err;
             }
-
-            var res = req.CreateResponse(HttpStatusCode.Created);
-            await res.WriteAsJsonAsync(ticket);
-            return res;
+            catch (Exception ex)
+            {
+                var err = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await err.WriteStringAsync($"Server Error: {ex.Message}");
+                return err;
+            }
         }
-
-
 
         private HttpResponseData BadRequest(HttpRequestData req, string msg)
         {
             var res = req.CreateResponse(HttpStatusCode.BadRequest);
-            res.WriteString(msg);
-            return res;
-        }
-
-        private HttpResponseData Error(HttpRequestData req, HttpStatusCode code, string msg)
-        {
-            var res = req.CreateResponse(code);
             res.WriteString(msg);
             return res;
         }

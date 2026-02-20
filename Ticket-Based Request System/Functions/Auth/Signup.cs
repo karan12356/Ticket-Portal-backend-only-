@@ -22,7 +22,7 @@ namespace Ticket_Based_Request_System.Functions.Auth
 
         [Function("Signup")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "auth/signup")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/signup")]
             HttpRequestData req)
         {
             try
@@ -59,8 +59,10 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     "Sales Rep" => "W",
                     "SVP" => "X",
                     "IT Manager" => "Y",
+                    "Admin" => "A",   
                     _ => null
                 };
+
 
                 if (rolePrefix == null)
                 {

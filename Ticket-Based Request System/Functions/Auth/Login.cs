@@ -20,7 +20,7 @@ namespace Ticket_Based_Request_System.Functions.Auth
 
         [Function("Login")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "auth/login")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")]
             HttpRequestData req)
         {
             try

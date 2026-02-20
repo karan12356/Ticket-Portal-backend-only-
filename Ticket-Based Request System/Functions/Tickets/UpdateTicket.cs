@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -47,17 +47,25 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             var body = await JsonSerializer.DeserializeAsync<JsonElement>(req.Body);
 
-            if (body.TryGetProperty("title", out var title))
+            if (body.TryGetProperty("title", out var title) &&
+                title.ValueKind != JsonValueKind.Null)
                 ticket.title = title.GetString();
 
-            if (body.TryGetProperty("description", out var desc))
+            if (body.TryGetProperty("description", out var desc) &&
+                desc.ValueKind != JsonValueKind.Null)
                 ticket.description = desc.GetString();
 
-            if (body.TryGetProperty("category", out var cat))
+            if (body.TryGetProperty("category", out var cat) &&
+                cat.ValueKind != JsonValueKind.Null)
                 ticket.category = cat.GetString();
 
-            if (body.TryGetProperty("status", out var status))
+            if (body.TryGetProperty("status", out var status) &&
+                status.ValueKind != JsonValueKind.Null)
                 ticket.status = status.GetString();
+
+            if (body.TryGetProperty("isConfidential", out var confidential) &&
+                confidential.ValueKind != JsonValueKind.Null)
+                ticket.isConfidential = confidential.GetBoolean();
 
             ticket.updatedAt = DateTime.UtcNow;
 

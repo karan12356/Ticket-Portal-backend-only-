@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
@@ -23,10 +23,11 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             HttpRequestData req,
             string id)
         {
+            string role = req.Query["role"];
             string userId = req.Query["userId"];
 
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest(req, "userId query parameter is required");
+            if (string.IsNullOrWhiteSpace(role))
+                return BadRequest(req, "role query parameter is required");
 
             string body = await new StreamReader(req.Body).ReadToEndAsync();
             var data = JsonSerializer.Deserialize<UpdateStatusRequest>(body);
@@ -41,11 +42,34 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             try
             {
-                var response = await _cosmos.Tickets.ReadItemAsync<Ticket>(
-                    id,
-                    new PartitionKey(userId));
+                Ticket ticket;
 
-                var ticket = response.Resource;
+               
+                if (role == "Admin")
+                {
+                    var query = new QueryDefinition(
+                        "SELECT * FROM c WHERE c.id = @id")
+                        .WithParameter("@id", id);
+
+                    var iterator = _cosmos.Tickets.GetItemQueryIterator<Ticket>(query);
+                    var response = await iterator.ReadNextAsync();
+                    ticket = response.FirstOrDefault();
+
+                    if (ticket == null)
+                        return req.CreateResponse(HttpStatusCode.NotFound);
+                }
+               
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(userId))
+                        return BadRequest(req, "userId query parameter is required");
+
+                    var response = await _cosmos.Tickets.ReadItemAsync<Ticket>(
+                        id,
+                        new PartitionKey(userId));
+
+                    ticket = response.Resource;
+                }
 
                 ticket.status = data.status;
                 ticket.updatedAt = DateTime.UtcNow;
@@ -53,7 +77,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 await _cosmos.Tickets.ReplaceItemAsync(
                     ticket,
                     ticket.id,
-                    new PartitionKey(userId));
+                    new PartitionKey(ticket.userId));
 
                 var res = req.CreateResponse(HttpStatusCode.OK);
                 await res.WriteAsJsonAsync(ticket);
@@ -84,8 +108,5 @@ namespace Ticket_Based_Request_System.Functions.Tickets
         }
     }
 
-    public class UpdateStatusRequest
-    {
-        public string status { get; set; }
-    }
+   
 }

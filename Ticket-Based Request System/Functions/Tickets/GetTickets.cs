@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Cosmos;
@@ -18,23 +18,37 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
         [Function("GetTickets")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tickets")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tickets")]
             HttpRequestData req)
         {
             try
             {
+                string role = req.Query["role"];
                 string userId = req.Query["userId"];
                 int page = int.TryParse(req.Query["page"], out var p) ? p : 1;
                 int pageSize = 5;
 
-                if (string.IsNullOrEmpty(userId))
-                {
+                if (string.IsNullOrWhiteSpace(role))
                     return req.CreateResponse(HttpStatusCode.BadRequest);
-                }
 
-                var query = new QueryDefinition(
-                    "SELECT * FROM c WHERE c.userId = @uid ORDER BY c.createdAt DESC")
-                    .WithParameter("@uid", userId);
+                QueryDefinition query;
+
+               
+                if (role == "Admin")
+                {
+                    query = new QueryDefinition(
+                        "SELECT * FROM c ORDER BY c.createdAt DESC");
+                }
+               
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(userId))
+                        return req.CreateResponse(HttpStatusCode.BadRequest);
+
+                    query = new QueryDefinition(
+                        "SELECT * FROM c WHERE c.userId = @uid ORDER BY c.createdAt DESC")
+                        .WithParameter("@uid", userId);
+                }
 
                 var requestOptions = new QueryRequestOptions
                 {
@@ -51,6 +65,9 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                         continuationToken,
                         requestOptions);
 
+                    if (!iterator.HasMoreResults)
+                        break;
+
                     response = await iterator.ReadNextAsync();
                     continuationToken = response.ContinuationToken;
                 }
@@ -59,7 +76,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 {
                     page,
                     pageSize,
-                    tickets = response.Resource,
+                    tickets = response?.Resource ?? new List<Ticket>(),
                     nextPageToken = continuationToken
                 };
 
