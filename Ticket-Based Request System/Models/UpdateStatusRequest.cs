@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Ticket_Based_Request_System.Models
 {
-    internal class UpdateStatusRequest
+    public class UpdateStatusRequest
     {
+        public string ticketId { get; set; }
         public string status { get; set; }
     }
 }

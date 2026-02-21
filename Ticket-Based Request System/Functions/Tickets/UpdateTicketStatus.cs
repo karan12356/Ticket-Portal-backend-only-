@@ -19,59 +19,43 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
         [Function("UpdateTicketStatus")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "tickets/{id}/status")]
-            HttpRequestData req,
-            string id)
+            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "tickets/update-status")]
+            HttpRequestData req)
         {
-            string role = req.Query["role"];
-            string userId = req.Query["userId"];
-
-            if (string.IsNullOrWhiteSpace(role))
-                return BadRequest(req, "role query parameter is required");
-
-            string body = await new StreamReader(req.Body).ReadToEndAsync();
-            var data = JsonSerializer.Deserialize<UpdateStatusRequest>(body);
-
-            if (data == null || string.IsNullOrWhiteSpace(data.status))
-                return BadRequest(req, "Status is required");
-
-            string[] allowedStatuses = { "Open", "InProgress", "Resolved", "Closed" };
-
-            if (!allowedStatuses.Contains(data.status))
-                return BadRequest(req, "Invalid status value");
-
             try
             {
-                Ticket ticket;
+                string role = req.Query["role"];
 
-               
-                if (role == "Admin")
-                {
-                    var query = new QueryDefinition(
-                        "SELECT * FROM c WHERE c.id = @id")
-                        .WithParameter("@id", id);
+                if (role != "Admin")
+                    return req.CreateResponse(HttpStatusCode.Forbidden);
 
-                    var iterator = _cosmos.Tickets.GetItemQueryIterator<Ticket>(query);
-                    var response = await iterator.ReadNextAsync();
-                    ticket = response.FirstOrDefault();
+                string body = await new StreamReader(req.Body).ReadToEndAsync();
+                var request = JsonSerializer.Deserialize<UpdateStatusRequest>(body);
 
-                    if (ticket == null)
-                        return req.CreateResponse(HttpStatusCode.NotFound);
-                }
-               
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(userId))
-                        return BadRequest(req, "userId query parameter is required");
+                if (request == null || string.IsNullOrWhiteSpace(request.ticketId))
+                    return BadRequest(req, "ticketId is required");
 
-                    var response = await _cosmos.Tickets.ReadItemAsync<Ticket>(
-                        id,
-                        new PartitionKey(userId));
+                if (string.IsNullOrWhiteSpace(request.status))
+                    return BadRequest(req, "status is required");
 
-                    ticket = response.Resource;
-                }
+                string[] allowedStatuses = { "Open", "InProgress", "Resolved", "Closed" };
 
-                ticket.status = data.status;
+                if (!allowedStatuses.Contains(request.status))
+                    return BadRequest(req, "Invalid status value");
+
+                // 🔎 Same query pattern as BulkUpdateTickets
+                var query = new QueryDefinition(
+                    "SELECT * FROM c WHERE c.id = @id")
+                    .WithParameter("@id", request.ticketId);
+
+                var iterator = _cosmos.Tickets.GetItemQueryIterator<Ticket>(query);
+                var response = await iterator.ReadNextAsync();
+                var ticket = response.FirstOrDefault();
+
+                if (ticket == null)
+                    return req.CreateResponse(HttpStatusCode.NotFound);
+
+                ticket.status = request.status;
                 ticket.updatedAt = DateTime.UtcNow;
 
                 await _cosmos.Tickets.ReplaceItemAsync(
@@ -82,10 +66,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 var res = req.CreateResponse(HttpStatusCode.OK);
                 await res.WriteAsJsonAsync(ticket);
                 return res;
-            }
-            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return req.CreateResponse(HttpStatusCode.NotFound);
             }
             catch
             {
@@ -107,6 +87,4 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             return res;
         }
     }
-
-   
 }
