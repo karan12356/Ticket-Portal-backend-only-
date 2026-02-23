@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using System.Net;
+using System.Text.Json;
 using Ticket_Based_Request_System.Models;
 using Ticket_Based_Request_System.Services;
 
@@ -46,6 +47,10 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 bool isDraft = false;
                 bool isConfidential = false;
 
+                string newEmployeeName = null, startDate = null, position = null;
+                string separationEmployeeName = null, lastWorkingDay = null;
+                string assetItemName = null, quantity = null;
+
                 var attachments = new List<Attachment>();
                 var pendingFiles = new List<(MultipartSection section, string fileName)>();
 
@@ -74,6 +79,16 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                             case "requestType": requestType = value; break;
                             case "isDraft": bool.TryParse(value, out isDraft); break;
                             case "isConfidential": bool.TryParse(value, out isConfidential); break;
+
+                            case "newEmployeeName": newEmployeeName = value; break;
+                            case "startDate": startDate = value; break;
+                            case "position": position = value; break;
+
+                            case "separationEmployeeName": separationEmployeeName = value; break;
+                            case "lastWorkingDay": lastWorkingDay = value; break;
+
+                            case "assetItemName": assetItemName = value; break;
+                            case "quantity": quantity = value; break;
                         }
                     }
                     else if (contentDisposition.IsFileDisposition())
@@ -101,6 +116,42 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 if (operationalTypes.Contains(requestType) && role != "Admin")
                 {
                     return BadRequest(req, "Only Admin can create operational requests");
+                }
+
+                object adminData = null;
+
+                if (role == "Admin")
+                {
+                    switch (requestType)
+                    {
+                        case "EmployeeCreation":
+                            adminData = new
+                            {
+                                newEmployeeName,
+                                startDate,
+                                position,
+                                description
+                            };
+                            break;
+
+                        case "EmployeeSeparation":
+                            adminData = new
+                            {
+                                separationEmployeeName,
+                                lastWorkingDay,
+                                description
+                            };
+                            break;
+
+                        case "AssetOrder":
+                            adminData = new
+                            {
+                                assetItemName,
+                                quantity,
+                                description
+                            };
+                            break;
+                    }
                 }
 
                 if (pendingFiles.Count > 5)
@@ -159,6 +210,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     isDraft = isDraft,
                     submittedAt = submittedAt,
                     isConfidential = isConfidential,
+                    adminData = adminData,   
                     attachments = attachments,
                     createdAt = DateTime.UtcNow,
                     updatedAt = DateTime.UtcNow
@@ -170,16 +222,10 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 await res.WriteAsJsonAsync(ticket);
                 return res;
             }
-            catch (CosmosException ex)
-            {
-                var err = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await err.WriteStringAsync($"Cosmos DB Error: {ex.Message}");
-                return err;
-            }
             catch (Exception ex)
             {
                 var err = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await err.WriteStringAsync($"Server Error: {ex.Message}");
+                await err.WriteStringAsync(ex.Message);
                 return err;
             }
         }
