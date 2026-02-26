@@ -1,10 +1,10 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using System.Net;
-using System.Text.Json;
+using Ticket_Based_Request_System.Helpers;
 using Ticket_Based_Request_System.Models;
 using Ticket_Based_Request_System.Services;
 
@@ -47,10 +47,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 bool isDraft = false;
                 bool isConfidential = false;
 
-                string newEmployeeName = null, startDate = null, position = null;
-                string separationEmployeeName = null, lastWorkingDay = null;
-                string assetItemName = null, quantity = null;
-
                 var attachments = new List<Attachment>();
                 var pendingFiles = new List<(MultipartSection section, string fileName)>();
 
@@ -79,16 +75,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                             case "requestType": requestType = value; break;
                             case "isDraft": bool.TryParse(value, out isDraft); break;
                             case "isConfidential": bool.TryParse(value, out isConfidential); break;
-
-                            case "newEmployeeName": newEmployeeName = value; break;
-                            case "startDate": startDate = value; break;
-                            case "position": position = value; break;
-
-                            case "separationEmployeeName": separationEmployeeName = value; break;
-                            case "lastWorkingDay": lastWorkingDay = value; break;
-
-                            case "assetItemName": assetItemName = value; break;
-                            case "quantity": quantity = value; break;
                         }
                     }
                     else if (contentDisposition.IsFileDisposition())
@@ -107,56 +93,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     return BadRequest(req, "Missing required fields");
                 }
 
-                string[] operationalTypes = {
-                    "EmployeeCreation",
-                    "EmployeeSeparation",
-                    "AssetOrder"
-                };
-
-                if (operationalTypes.Contains(requestType) && role != "Admin")
-                {
-                    return BadRequest(req, "Only Admin can create operational requests");
-                }
-
-                object adminData = null;
-
-                if (role == "Admin")
-                {
-                    switch (requestType)
-                    {
-                        case "EmployeeCreation":
-                            adminData = new
-                            {
-                                newEmployeeName,
-                                startDate,
-                                position,
-                                description
-                            };
-                            break;
-
-                        case "EmployeeSeparation":
-                            adminData = new
-                            {
-                                separationEmployeeName,
-                                lastWorkingDay,
-                                description
-                            };
-                            break;
-
-                        case "AssetOrder":
-                            adminData = new
-                            {
-                                assetItemName,
-                                quantity,
-                                description
-                            };
-                            break;
-                    }
-                }
-
-                if (pendingFiles.Count > 5)
-                    return BadRequest(req, "Maximum 5 attachments allowed");
-
+                // Handle attachments
                 foreach (var (fileSection, fileName) in pendingFiles)
                 {
                     var ext = Path.GetExtension(fileName).ToLower();
@@ -178,19 +115,39 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 string confirmationNumber = null;
                 DateTime? submittedAt = null;
 
+                // 🔥 SAFE COUNTER HANDLING
                 if (!isDraft)
                 {
-                    var counterResponse = await _cosmos.Counters.ReadItemAsync<dynamic>(
-                        rolePrefix,
-                        new PartitionKey("ticket"));
+                    int nextNumber = 1;
 
-                    int nextNumber = counterResponse.Resource.currentValue + 1;
-                    counterResponse.Resource.currentValue = nextNumber;
+                    try
+                    {
+                        var counterResponse = await _cosmos.Counters.ReadItemAsync<dynamic>(
+                            rolePrefix,
+                            new PartitionKey("ticket"));
 
-                    await _cosmos.Counters.ReplaceItemAsync(
-                        counterResponse.Resource,
-                        rolePrefix,
-                        new PartitionKey("ticket"));
+                        nextNumber = counterResponse.Resource.currentValue + 1;
+                        counterResponse.Resource.currentValue = nextNumber;
+
+                        await _cosmos.Counters.ReplaceItemAsync(
+                            counterResponse.Resource,
+                            rolePrefix,
+                            new PartitionKey("ticket"));
+                    }
+                    catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        var newCounter = new
+                        {
+                            id = rolePrefix,
+                            currentValue = 1
+                        };
+
+                        await _cosmos.Counters.CreateItemAsync(
+                            newCounter,
+                            new PartitionKey("ticket"));
+
+                        nextNumber = 1;
+                    }
 
                     confirmationNumber = $"{rolePrefix}-{nextNumber:D5}";
                     submittedAt = DateTime.UtcNow;
@@ -204,13 +161,14 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     role = role,
                     requestType = requestType,
                     title = title,
-                    description = description,
+                    description = isConfidential
+                        ? EncryptionHelper.Encrypt(description)
+                        : description,
                     category = category,
                     status = isDraft ? "Draft" : "Open",
                     isDraft = isDraft,
                     submittedAt = submittedAt,
                     isConfidential = isConfidential,
-                    adminData = adminData,   
                     attachments = attachments,
                     createdAt = DateTime.UtcNow,
                     updatedAt = DateTime.UtcNow

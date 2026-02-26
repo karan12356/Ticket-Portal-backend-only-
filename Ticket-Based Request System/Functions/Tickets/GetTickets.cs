@@ -33,7 +33,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
                 QueryDefinition query;
 
-               
                 if (role == "Admin")
                 {
                     query = new QueryDefinition(
@@ -72,11 +71,22 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     continuationToken = response.ContinuationToken;
                 }
 
+                
+                var ticketsList = response?.Resource?.ToList() ?? new List<Ticket>();
+
+                foreach (var ticket in ticketsList)
+                {
+                    if (ticket.isConfidential)
+                    {
+                        ticket.description = "Confidential – Requires Admin Password to View";
+                    }
+                }
+
                 var result = new
                 {
                     page,
                     pageSize,
-                    tickets = response?.Resource ?? new List<Ticket>(),
+                    tickets = ticketsList,
                     nextPageToken = continuationToken
                 };
 

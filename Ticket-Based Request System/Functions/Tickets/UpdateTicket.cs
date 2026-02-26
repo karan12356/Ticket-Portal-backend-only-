@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Cosmos;
 using Ticket_Based_Request_System.Models;
 using Ticket_Based_Request_System.Services;
+using Ticket_Based_Request_System.Helpers;
 
 namespace Ticket_Based_Request_System.Functions.Tickets
 {
@@ -47,13 +48,12 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             var body = await JsonSerializer.DeserializeAsync<JsonElement>(req.Body);
 
+            bool isConfidentialUpdated = false;
+            bool newConfidentialValue = ticket.isConfidential;
+
             if (body.TryGetProperty("title", out var title) &&
                 title.ValueKind != JsonValueKind.Null)
                 ticket.title = title.GetString();
-
-            if (body.TryGetProperty("description", out var desc) &&
-                desc.ValueKind != JsonValueKind.Null)
-                ticket.description = desc.GetString();
 
             if (body.TryGetProperty("category", out var cat) &&
                 cat.ValueKind != JsonValueKind.Null)
@@ -65,7 +65,32 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             if (body.TryGetProperty("isConfidential", out var confidential) &&
                 confidential.ValueKind != JsonValueKind.Null)
-                ticket.isConfidential = confidential.GetBoolean();
+            {
+                newConfidentialValue = confidential.GetBoolean();
+                isConfidentialUpdated = true;
+            }
+
+            if (body.TryGetProperty("description", out var desc) &&
+                desc.ValueKind != JsonValueKind.Null)
+            {
+                var newDescription = desc.GetString();
+
+               
+                if (newConfidentialValue)
+                {
+                    ticket.description = EncryptionHelper.Encrypt(newDescription);
+                }
+                else
+                {
+                    ticket.description = newDescription;
+                }
+            }
+
+            
+            if (isConfidentialUpdated)
+            {
+                ticket.isConfidential = newConfidentialValue;
+            }
 
             ticket.updatedAt = DateTime.UtcNow;
 
