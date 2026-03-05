@@ -3,6 +3,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using Ticket_Based_Request_System.Helpers;
 using Ticket_Based_Request_System.Models;
@@ -14,11 +15,13 @@ namespace Ticket_Based_Request_System.Functions.Tickets
     {
         private readonly CosmosDbService _cosmos;
         private readonly BlobStorageService _blob;
+        private readonly ILogger<CreateTicket> _logger;
 
-        public CreateTicket(CosmosDbService cosmos, BlobStorageService blob)
+        public CreateTicket(CosmosDbService cosmos, BlobStorageService blob, ILogger<CreateTicket> logger)
         {
             _cosmos = cosmos;
             _blob = blob;
+            _logger = logger;
         }
 
         [Function("CreateTicket")]
@@ -28,9 +31,12 @@ namespace Ticket_Based_Request_System.Functions.Tickets
         {
             try
             {
+                _logger.LogInformation("CreateTicket API triggered.");
+
                 if (!req.Headers.TryGetValues("Content-Type", out var values) ||
                     !values.First().StartsWith("multipart/form-data"))
                 {
+                    _logger.LogWarning("Invalid content type received for ticket creation.");
                     return BadRequest(req, "Content-Type must be multipart/form-data");
                 }
 
@@ -83,6 +89,11 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     }
                 }
 
+                _logger.LogInformation(
+                    "Ticket request received from UserId: {UserId}, EmployeeCode: {EmployeeCode}, Role: {Role}",
+                    userId, employeeCode, role
+                );
+
                 if (string.IsNullOrWhiteSpace(userId) ||
                     string.IsNullOrWhiteSpace(employeeCode) ||
                     string.IsNullOrWhiteSpace(role) ||
@@ -90,6 +101,7 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     string.IsNullOrWhiteSpace(title) ||
                     string.IsNullOrWhiteSpace(category))
                 {
+                    _logger.LogWarning("Ticket creation failed due to missing required fields. UserId: {UserId}", userId);
                     return BadRequest(req, "Missing required fields");
                 }
 
@@ -98,10 +110,15 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 {
                     var ext = Path.GetExtension(fileName).ToLower();
                     if (ext != ".jpg" && ext != ".jpeg" && ext != ".pdf")
+                    {
+                        _logger.LogWarning("Invalid attachment type attempted: {FileName}", fileName);
                         return BadRequest(req, "Only JPG, JPEG, PDF allowed");
+                    }
 
                     string blobPath = $"tickets/{userId}/{Guid.NewGuid()}_{fileName}";
                     string fileUrl = await _blob.UploadAsync(blobPath, fileSection.Body, fileSection.ContentType);
+
+                    _logger.LogInformation("Attachment uploaded: {FileName} for UserId: {UserId}", fileName, userId);
 
                     attachments.Add(new Attachment
                     {
@@ -115,7 +132,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 string confirmationNumber = null;
                 DateTime? submittedAt = null;
 
-                // 🔥 SAFE COUNTER HANDLING
                 if (!isDraft)
                 {
                     int nextNumber = 1;
@@ -133,9 +149,16 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                             counterResponse.Resource,
                             rolePrefix,
                             new PartitionKey("ticket"));
+
+                        _logger.LogInformation(
+                            "Ticket counter updated for rolePrefix {RolePrefix}. NextNumber: {NextNumber}",
+                            rolePrefix, nextNumber
+                        );
                     }
                     catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                     {
+                        _logger.LogWarning("Ticket counter not found for rolePrefix {RolePrefix}. Creating new counter.", rolePrefix);
+
                         var newCounter = new
                         {
                             id = rolePrefix,
@@ -151,6 +174,11 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
                     confirmationNumber = $"{rolePrefix}-{nextNumber:D5}";
                     submittedAt = DateTime.UtcNow;
+
+                    _logger.LogInformation(
+                        "Confirmation number generated: {ConfirmationNumber} for UserId: {UserId}",
+                        confirmationNumber, userId
+                    );
                 }
 
                 var ticket = new Ticket
@@ -176,12 +204,19 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
                 await _cosmos.Tickets.CreateItemAsync(ticket, new PartitionKey(userId));
 
+                _logger.LogInformation(
+                    "Ticket created successfully. TicketId: {TicketId}, ConfirmationNumber: {ConfirmationNumber}, UserId: {UserId}",
+                    ticket.id, ticket.confirmationNumber, userId
+                );
+
                 var res = req.CreateResponse(HttpStatusCode.Created);
                 await res.WriteAsJsonAsync(ticket);
                 return res;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while creating ticket.");
+
                 var err = req.CreateResponse(HttpStatusCode.InternalServerError);
                 await err.WriteStringAsync(ex.Message);
                 return err;

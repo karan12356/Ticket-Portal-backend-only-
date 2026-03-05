@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
 using Ticket_Based_Request_System.Services;
 using Ticket_Based_Request_System.Helpers;
 
@@ -14,10 +15,12 @@ namespace Ticket_Based_Request_System.Functions.Auth
     public class Signup
     {
         private readonly CosmosDbService _cosmos;
+        private readonly ILogger<Signup> _logger;
 
-        public Signup(CosmosDbService cosmos)
+        public Signup(CosmosDbService cosmos, ILogger<Signup> logger)
         {
             _cosmos = cosmos;
+            _logger = logger;
         }
 
         [Function("Signup")]
@@ -27,6 +30,8 @@ namespace Ticket_Based_Request_System.Functions.Auth
         {
             try
             {
+                _logger.LogInformation("Signup API triggered.");
+
                 var body = await JsonSerializer.DeserializeAsync<JsonElement>(req.Body);
 
                 string name = body.GetProperty("name").GetString();
@@ -34,22 +39,27 @@ namespace Ticket_Based_Request_System.Functions.Auth
                 string password = body.GetProperty("password").GetString();
                 string role = body.GetProperty("role").GetString();
 
+                _logger.LogInformation("Signup attempt for email: {Email}, Role: {Role}", email, role);
+
                 if (string.IsNullOrWhiteSpace(name) ||
                     string.IsNullOrWhiteSpace(email) ||
                     string.IsNullOrWhiteSpace(password) ||
                     string.IsNullOrWhiteSpace(role))
                 {
+                    _logger.LogWarning("Signup validation failed: Missing required fields for email {Email}", email);
                     return BadRequest(req, "All fields are required");
                 }
 
                 if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                 {
+                    _logger.LogWarning("Signup validation failed: Invalid email format for {Email}", email);
                     return BadRequest(req, "Invalid email format");
                 }
 
                 if (!Regex.IsMatch(password,
                     @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"))
                 {
+                    _logger.LogWarning("Signup validation failed: Weak password for email {Email}", email);
                     return BadRequest(req,
                         "Password must be at least 8 characters and include uppercase, number, and special character");
                 }
@@ -59,13 +69,13 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     "Sales Rep" => "W",
                     "SVP" => "X",
                     "IT Manager" => "Y",
-                    "Admin" => "A",   
+                    "Admin" => "A",
                     _ => null
                 };
 
-
                 if (rolePrefix == null)
                 {
+                    _logger.LogWarning("Signup failed: Invalid role selected for email {Email}", email);
                     return BadRequest(req, "Invalid role");
                 }
 
@@ -78,10 +88,14 @@ namespace Ticket_Based_Request_System.Functions.Auth
 
                 if (emailCount > 0)
                 {
+                    _logger.LogWarning("Signup failed: Email already exists {Email}", email);
+
                     var conflict = req.CreateResponse(HttpStatusCode.Conflict);
                     await conflict.WriteStringAsync("Email already exists");
                     return conflict;
                 }
+
+                _logger.LogInformation("Generating employeeCode for new user {Email}", email);
 
                 var counter = await _cosmos.Counters.ReadItemAsync<dynamic>(
                     "employeeCode",
@@ -109,6 +123,14 @@ namespace Ticket_Based_Request_System.Functions.Auth
                     user,
                     new PartitionKey(email));
 
+                _logger.LogInformation(
+                    "New user created successfully. UserId: {UserId}, Email: {Email}, EmployeeCode: {EmployeeCode}, Role: {Role}",
+                    user.id,
+                    user.email,
+                    user.employeeCode,
+                    user.role
+                );
+
                 var res = req.CreateResponse(HttpStatusCode.Created);
                 await res.WriteAsJsonAsync(new
                 {
@@ -121,8 +143,9 @@ namespace Ticket_Based_Request_System.Functions.Auth
 
                 return res;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred during signup process.");
                 return req.CreateResponse(HttpStatusCode.InternalServerError);
             }
         }

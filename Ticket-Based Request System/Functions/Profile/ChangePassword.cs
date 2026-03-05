@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
 using Ticket_Based_Request_System.Services;
 using Ticket_Based_Request_System.Helpers;
 using AppUser = Ticket_Based_Request_System.Models.User;
@@ -12,10 +13,12 @@ namespace Ticket_Based_Request_System.Functions.Profile
     public class ChangePassword
     {
         private readonly CosmosDbService _cosmos;
+        private readonly ILogger<ChangePassword> _logger;
 
-        public ChangePassword(CosmosDbService cosmos)
+        public ChangePassword(CosmosDbService cosmos, ILogger<ChangePassword> logger)
         {
             _cosmos = cosmos;
+            _logger = logger;
         }
 
         [Function("ChangePassword")]
@@ -26,6 +29,10 @@ namespace Ticket_Based_Request_System.Functions.Profile
         {
             try
             {
+                _logger.LogInformation(
+                    "ChangePassword API triggered for Email: {Email}",
+                    email);
+
                 var body = await JsonSerializer.DeserializeAsync<JsonElement>(req.Body);
 
                 string oldPassword = body.GetProperty("oldPassword").GetString();
@@ -33,7 +40,13 @@ namespace Ticket_Based_Request_System.Functions.Profile
 
                 if (string.IsNullOrWhiteSpace(oldPassword) ||
                     string.IsNullOrWhiteSpace(newPassword))
+                {
+                    _logger.LogWarning(
+                        "Password change failed. Missing old/new password. Email: {Email}",
+                        email);
+
                     return req.CreateResponse(HttpStatusCode.BadRequest);
+                }
 
                 var container = _cosmos.Users;
 
@@ -46,10 +59,22 @@ namespace Ticket_Based_Request_System.Functions.Profile
                 var user = result.FirstOrDefault();
 
                 if (user == null)
+                {
+                    _logger.LogWarning(
+                        "Password change failed. User not found. Email: {Email}",
+                        email);
+
                     return req.CreateResponse(HttpStatusCode.NotFound);
+                }
 
                 if (!PasswordHelper.Verify(oldPassword, user.passwordHash))
+                {
+                    _logger.LogWarning(
+                        "Password change failed. Invalid old password attempt. Email: {Email}",
+                        email);
+
                     return req.CreateResponse(HttpStatusCode.Unauthorized);
+                }
 
                 user.passwordHash = PasswordHelper.HashPassword(newPassword);
 
@@ -58,12 +83,21 @@ namespace Ticket_Based_Request_System.Functions.Profile
                     user.id,
                     new PartitionKey(user.email));
 
+                _logger.LogInformation(
+                    "Password changed successfully for Email: {Email}",
+                    email);
+
                 var res = req.CreateResponse(HttpStatusCode.OK);
                 await res.WriteStringAsync("Password changed successfully");
                 return res;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(
+                    ex,
+                    "Error occurred while changing password for Email: {Email}",
+                    email);
+
                 return req.CreateResponse(HttpStatusCode.InternalServerError);
             }
         }
