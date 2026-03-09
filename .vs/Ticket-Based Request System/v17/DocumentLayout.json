@@ -3,8 +3,24 @@
   "WorkspaceRootPath": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\services\\blobstorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\services\\blobstorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\services\\cosmosdbservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\services\\cosmosdbservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\repositories\\blobrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\repositories\\blobrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|c:\\users\\karan\\onedrive\\desktop\\ticket-based request system\\ticket-based request system\\repositories\\cosmosrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{484F8C4F-39A6-4CD0-826B-7FCE3D0013BD}|Ticket-Based Request System\\Ticket-Based Request System.csproj|solutionrelative:ticket-based request system\\repositories\\cosmosrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,19 +30,71 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
+              "Title": "BlobRepository.cs",
+              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Repositories\\BlobRepository.cs",
+              "RelativeDocumentMoniker": "Ticket-Based Request System\\Repositories\\BlobRepository.cs",
+              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Repositories\\BlobRepository.cs",
+              "RelativeToolTip": "Ticket-Based Request System\\Repositories\\BlobRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T08:54:30.738Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CosmosRepository.cs",
+              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Repositories\\CosmosRepository.cs",
+              "RelativeDocumentMoniker": "Ticket-Based Request System\\Repositories\\CosmosRepository.cs",
+              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Repositories\\CosmosRepository.cs",
+              "RelativeToolTip": "Ticket-Based Request System\\Repositories\\CosmosRepository.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAAAFwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T08:54:03.084Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "CosmosDbService.cs",
               "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\CosmosDbService.cs",
               "RelativeDocumentMoniker": "Ticket-Based Request System\\Services\\CosmosDbService.cs",
               "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\CosmosDbService.cs",
               "RelativeToolTip": "Ticket-Based Request System\\Services\\CosmosDbService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-05T18:02:45.654Z",
+              "WhenOpened": "2026-03-09T08:41:39.148Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Program.cs",
+              "RelativeDocumentMoniker": "Ticket-Based Request System\\Program.cs",
+              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Program.cs",
+              "RelativeToolTip": "Ticket-Based Request System\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T08:40:49.681Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "BlobStorageService.cs",
+              "DocumentMoniker": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\BlobStorageService.cs",
+              "RelativeDocumentMoniker": "Ticket-Based Request System\\Services\\BlobStorageService.cs",
+              "ToolTip": "C:\\Users\\karan\\OneDrive\\Desktop\\Ticket-Based Request System\\Ticket-Based Request System\\Services\\BlobStorageService.cs",
+              "RelativeToolTip": "Ticket-Based Request System\\Services\\BlobStorageService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T08:10:54.873Z",
               "EditorCaption": ""
             }
           ]

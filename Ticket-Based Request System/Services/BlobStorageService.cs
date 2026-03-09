@@ -1,28 +1,14 @@
-﻿using Azure.Storage.Blobs;
-using Microsoft.Extensions.Configuration;
+﻿using Ticket_Based_Request_System.Repositories;
 
 namespace Ticket_Based_Request_System.Services
 {
     public class BlobStorageService
     {
-        private readonly BlobContainerClient _container;
+        private readonly BlobRepository _repository;
 
-        public BlobStorageService(IConfiguration configuration)
+        public BlobStorageService(BlobRepository repository)
         {
-            try
-            {
-                var blobServiceClient = new BlobServiceClient(
-                    configuration["BlobStorage:ConnectionString"]
-                );
-
-                _container = blobServiceClient.GetBlobContainerClient(
-                    configuration["BlobStorage:ContainerName"]
-                );
-            }
-            catch
-            {
-                throw;
-            }
+            _repository = repository;
         }
 
         public async Task<string> UploadAsync(
@@ -30,16 +16,10 @@ namespace Ticket_Based_Request_System.Services
             Stream fileStream,
             string contentType)
         {
-            try
-            {
-                var blobClient = _container.GetBlobClient(blobPath);
-                await blobClient.UploadAsync(fileStream, overwrite: true);
-                return blobClient.Uri.ToString();
-            }
-            catch
-            {
-                throw;
-            }
+            return await _repository.UploadAsync(
+                blobPath,
+                fileStream,
+                contentType);
         }
     }
 }
