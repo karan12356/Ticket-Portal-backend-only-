@@ -87,6 +87,16 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 ticket.status = request.status;
                 ticket.updatedAt = DateTime.UtcNow;
 
+                if (ticket.ticketHistory == null)
+                    ticket.ticketHistory = new List<TicketHistory>();
+
+                ticket.ticketHistory.Add(new TicketHistory
+                {
+                    action = $"Status changed to {request.status}",
+                    performedBy = "Admin",
+                    timestamp = DateTime.UtcNow
+                });
+
                 await _cosmos.Tickets.ReplaceItemAsync(
                     ticket,
                     ticket.id,

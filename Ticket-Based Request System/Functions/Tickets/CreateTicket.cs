@@ -105,7 +105,6 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     return BadRequest(req, "Missing required fields");
                 }
 
-                // Handle attachments
                 foreach (var (fileSection, fileName) in pendingFiles)
                 {
                     var ext = Path.GetExtension(fileName).ToLower();

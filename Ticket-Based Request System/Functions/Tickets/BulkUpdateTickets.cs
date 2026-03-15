@@ -89,6 +89,10 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                             continue;
                         }
 
+                        // Ensure timeline exists
+                        if (ticket.ticketHistory == null)
+                            ticket.ticketHistory = new List<TicketHistory>();
+
                         if (request.action == "Close")
                         {
                             if (ticket.isDraft)
@@ -100,6 +104,13 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                             }
 
                             ticket.status = "Closed";
+
+                            ticket.ticketHistory.Add(new TicketHistory
+                            {
+                                action = "Ticket Closed",
+                                performedBy = "Admin",
+                                timestamp = DateTime.UtcNow
+                            });
 
                             _logger.LogInformation(
                                 "Ticket closed via bulk update. TicketId: {TicketId}",
@@ -117,6 +128,13 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                             }
 
                             ticket.assignedTo = request.assignedTo;
+
+                            ticket.ticketHistory.Add(new TicketHistory
+                            {
+                                action = $"Assigned to {request.assignedTo}",
+                                performedBy = "Admin",
+                                timestamp = DateTime.UtcNow
+                            });
 
                             _logger.LogInformation(
                                 "Ticket assigned via bulk update. TicketId: {TicketId}, AssignedTo: {AssignedTo}",

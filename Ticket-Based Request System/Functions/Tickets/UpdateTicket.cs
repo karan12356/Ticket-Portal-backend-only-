@@ -70,6 +70,9 @@ namespace Ticket_Based_Request_System.Functions.Tickets
 
             var body = await JsonSerializer.DeserializeAsync<JsonElement>(req.Body);
 
+            if (ticket.ticketHistory == null)
+                ticket.ticketHistory = new List<TicketHistory>();
+
             bool isConfidentialUpdated = false;
             bool newConfidentialValue = ticket.isConfidential;
 
@@ -77,6 +80,14 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 title.ValueKind != JsonValueKind.Null)
             {
                 ticket.title = title.GetString();
+
+                ticket.ticketHistory.Add(new TicketHistory
+                {
+                    action = "Title Updated",
+                    performedBy = userId,
+                    timestamp = DateTime.UtcNow
+                });
+
                 _logger.LogInformation("Ticket title updated. TicketId: {TicketId}", ticketId);
             }
 
@@ -84,6 +95,14 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 cat.ValueKind != JsonValueKind.Null)
             {
                 ticket.category = cat.GetString();
+
+                ticket.ticketHistory.Add(new TicketHistory
+                {
+                    action = "Category Updated",
+                    performedBy = userId,
+                    timestamp = DateTime.UtcNow
+                });
+
                 _logger.LogInformation("Ticket category updated. TicketId: {TicketId}", ticketId);
             }
 
@@ -91,6 +110,14 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 status.ValueKind != JsonValueKind.Null)
             {
                 ticket.status = status.GetString();
+
+                ticket.ticketHistory.Add(new TicketHistory
+                {
+                    action = $"Status changed to {ticket.status}",
+                    performedBy = userId,
+                    timestamp = DateTime.UtcNow
+                });
+
                 _logger.LogInformation("Ticket status updated. TicketId: {TicketId}", ticketId);
             }
 
@@ -99,6 +126,13 @@ namespace Ticket_Based_Request_System.Functions.Tickets
             {
                 newConfidentialValue = confidential.GetBoolean();
                 isConfidentialUpdated = true;
+
+                ticket.ticketHistory.Add(new TicketHistory
+                {
+                    action = $"Confidential flag changed to {newConfidentialValue}",
+                    performedBy = userId,
+                    timestamp = DateTime.UtcNow
+                });
 
                 _logger.LogInformation(
                     "Confidential flag update requested. TicketId: {TicketId}, NewValue: {Value}",
@@ -113,17 +147,22 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                 if (newConfidentialValue)
                 {
                     ticket.description = EncryptionHelper.Encrypt(newDescription);
-                    _logger.LogInformation(
-                        "Encrypted description stored for confidential ticket. TicketId: {TicketId}",
-                        ticketId);
                 }
                 else
                 {
                     ticket.description = newDescription;
-                    _logger.LogInformation(
-                        "Description updated for ticket. TicketId: {TicketId}",
-                        ticketId);
                 }
+
+                ticket.ticketHistory.Add(new TicketHistory
+                {
+                    action = "Description Updated",
+                    performedBy = userId,
+                    timestamp = DateTime.UtcNow
+                });
+
+                _logger.LogInformation(
+                    "Description updated for ticket. TicketId: {TicketId}",
+                    ticketId);
             }
 
             if (isConfidentialUpdated)

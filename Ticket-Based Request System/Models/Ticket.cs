@@ -28,6 +28,7 @@ namespace Ticket_Based_Request_System.Models
         public object adminData { get; set; }
 
         public List<Attachment> attachments { get; set; } = new();
+        public List<TicketHistory> ticketHistory { get; set; } = new();
 
         public DateTime createdAt { get; set; } = DateTime.UtcNow;
         public DateTime updatedAt { get; set; } = DateTime.UtcNow;

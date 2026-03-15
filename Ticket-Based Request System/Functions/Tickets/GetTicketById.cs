@@ -48,6 +48,13 @@ namespace Ticket_Based_Request_System.Functions.Tickets
                     "Ticket retrieved successfully. TicketId: {TicketId}, OwnerUserId: {UserId}",
                     id, ticket.userId);
 
+                if (ticket.ticketHistory == null)
+                    ticket.ticketHistory = new List<TicketHistory>();
+
+                ticket.ticketHistory = ticket.ticketHistory
+                    .OrderBy(h => h.timestamp)
+                    .ToList();
+
                 if (ticket.isConfidential)
                 {
                     _logger.LogInformation(
